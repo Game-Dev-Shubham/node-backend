@@ -1,35 +1,28 @@
-const express = require("express");
-const app = express();
+const http = require('http');
 
-app.use(express.json());
-
-// Home route
-app.get("/", (req,res)=>{
-  res.send("Backend Running 🚀 Sucessfully");
-});
-
-// Test API
-app.get("/api/data", (req,res)=>{
-  res.json({
-    name:"Anup",
-    message:"Hello from backend",
-    score:100
-  });
-});
-
-// POST example
-app.post("/api/score",(req,res)=>{
-  const data = req.body;
+const userData = [
+  {
+    name:"Shubham",
+    city:"Kushinagar",
+    age:20
+  },
   
-  res.json({
-    status:"Score received",
-    player:data.player,
-    score:data.score
-  });
+  {
+    name:"Ajay",
+    city:"Kushinagar",
+    age:18
+  },
+  
+  {
+    name:"Aniket",
+    city:"Kushinagar",
+    age:13
+  },
+]
+const server = http.createServer((req,res)=>{
+   res.setHeader("Content-Type","application/json");
+   res.write(JSON.stringify(userData));
+   res.end();
+  
 });
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, ()=>{
-  console.log("Server started");
-});
+server.listen(6000)
