@@ -21,8 +21,16 @@ const userData = [
 ]
 const server = http.createServer((req,res)=>{
    res.setHeader("Content-Type",'application/json');
-   res.write(JSON.stringify(userData));
+   
+   if(req.url=="login"){
+     res.write("Login Page");
+   }else if(req.url=="/"){
+     res.write(JSON.stringify(userData));
+   
+   }else{
+     res.write("Something Cool");
+   }
    res.end();
   
 });
-server.listen(process.env.PORT);
+server.listen(6000)
