@@ -25,4 +25,4 @@ const server = http.createServer((req,res)=>{
    res.end();
   
 });
-server.listen(6000)
+server.listen(process.env.PORT);
