@@ -5,7 +5,7 @@ app.use(express.json());
 
 // Home route
 app.get("/", (req,res)=>{
-  res.send("Backend Running 🚀");
+  res.send("Backend Running 🚀 Sucessfully");
 });
 
 // Test API
