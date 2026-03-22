@@ -1,5 +1,6 @@
 const http = require('http');
 const fs = require('fs');
+const querryString = require('querystring');
 
 const server = http.createServer((req,res)=>{
   fs.readFile('web.html','utf8',(error,data)=>{
@@ -13,7 +14,19 @@ const server = http.createServer((req,res)=>{
       }
       
     }else if(req.url == '/submit'){
-      res.end("submit");
+      
+      let usersData = [];
+      req.on('data',(chunk)=>{
+        usersData.push(chunk);
+      });
+     
+      req.on('end',()=>{
+        let body = Buffer.concat(usersData).toString();
+        let prasedData = querryString.parse(body);
+        res.end(JSON.stringify(prasedData));
+      });
+     
+      
     }
     
     
