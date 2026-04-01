@@ -3,14 +3,15 @@ const fs = require('fs');
 const querystring = require('querystring');
 const { MongoClient } = require('mongodb');
 
-// MongoDB URI
+// 0
 const uri = "mongodb+srv://gamedev:shubham@first-cluster.n8jtsrp.mongodb.net/gameDB?retryWrites=true&w=majority";
 
 const client = new MongoClient(uri);
 
 let usersCollection;
+let isDBConnected = false;
 
-// 🔥 Connect DB (background me)
+// 🔥 Connect DB
 async function connectDB() {
   try {
     await client.connect();
@@ -18,6 +19,8 @@ async function connectDB() {
 
     const db = client.db("gameDB");
     usersCollection = db.collection("users");
+
+    isDBConnected = true;
 
   } catch (err) {
     console.log("DB ERROR ❌", err);
@@ -52,12 +55,15 @@ const server = http.createServer((req, res) => {
       let parsedData = querystring.parse(body);
 
       try {
-        // ❗ agar DB ready nahi hai
-        if (!usersCollection) {
-          console.log("DB not ready yet ❌");
+        // 🔥 WAIT LOOP
+        let waitCount = 0;
+        while (!isDBConnected) {
+          await new Promise(r => setTimeout(r, 200));
+          waitCount++;
 
-          res.writeHead(500);
-          return res.end("DB not connected yet");
+          if (waitCount > 25) { // max ~5 sec
+            throw new Error("DB connection timeout");
+          }
         }
 
         const result = await usersCollection.insertOne(parsedData);
@@ -70,9 +76,9 @@ const server = http.createServer((req, res) => {
         }));
 
       } catch (err) {
-        console.log("Insert Error ❌", err);
+        console.log("ERROR ❌", err);
         res.writeHead(500);
-        res.end("DB Error");
+        res.end("Database Error");
       }
     });
   }
@@ -84,7 +90,6 @@ const server = http.createServer((req, res) => {
 
 });
 
-// 🔥 IMPORTANT (Render ke liye)
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
