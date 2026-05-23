@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
         }));
 
       } catch (err) {
-        console.log("ERROR ❌", err);
+        console.log("ERROR ❌ ", err);
         res.writeHead(500);
         res.end("Database Error");
       }
