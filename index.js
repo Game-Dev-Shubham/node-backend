@@ -1,75 +1,55 @@
-const http = require("http");
+const WebSocket = require("ws");
 
-let gyro = {
-    x: 0,
-    y: 0,
-    z: 0
-};
+const port = process.env.PORT || 10000;
 
-const server = http.createServer((req, res) => {
+const wss = new WebSocket.Server({ port });
 
-    if (req.method === "POST" && req.url === "/update") {
+let sender = null;
 
-        let body = "";
+wss.on("connection", (ws) => {
 
-        req.on("data", chunk => {
-            body += chunk;
-        });
+    ws.on("message", (msg) => {
 
-        req.on("end", () => {
+        let data;
 
-            try {
+        try {
+            data = JSON.parse(msg);
+        } catch {
+            return;
+        }
 
-                const data = JSON.parse(body);
+        if (data.type === "sender") {
+            sender = ws;
+            return;
+        }
 
-                gyro.x = data.x;
-                gyro.y = data.y;
-                gyro.z = data.z;
+        if (data.type === "receiver") {
+            ws.isReceiver = true;
+            return;
+        }
 
-                console.clear();
+        if (data.type === "gyro") {
 
-                console.log("Gyroscope");
+            wss.clients.forEach(client => {
 
-                console.log(gyro);
+                if (
+                    client.readyState === WebSocket.OPEN &&
+                    client.isReceiver
+                ) {
+                    client.send(JSON.stringify(data));
+                }
 
-                res.writeHead(200);
+            });
 
-                res.end("OK");
+        }
 
-            } catch (e) {
+    });
 
-                res.writeHead(400);
-
-                res.end("Bad JSON");
-
-            }
-
-        });
-
-    }
-
-    else if (req.method === "GET" && req.url === "/gyro") {
-
-        res.writeHead(200, {
-            "Content-Type": "application/json"
-        });
-
-        res.end(JSON.stringify(gyro));
-
-    }
-
-    else {
-
-        res.writeHead(404);
-
-        res.end();
-
-    }
+    ws.on("close", () => {
+        if (ws === sender)
+            sender = null;
+    });
 
 });
 
-server.listen(3000, () => {
-
-    console.log("Server Running");
-
-});
+console.log("Server Running...");
